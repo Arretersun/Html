@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>12306余票查询</title>
+    <style>
+        table,thead,tr,th,td{
+            border: 1px solid black;
+            border-collapse: collapse;
+
+        }
+
+        #search{
+            width: 100px;
+            height: 35px;
+            background-color: gold;
+        }
+    </style>
+    <script>
+        window.onload=function (){
+            document.getElementById("search").onclick=function (){
+                console.log("即将进行余票查询")
+                /*Ajax发送请求*/
+                request = new XMLHttpRequest();
+                request.onreadystatechange=callBack;//回调函数callBack
+                //拿到input中的value值
+                startStation=document.getElementById("startStation").value;
+                endSation=document.getElementById("endStation").value;
+                departureDate=document.getElementById("departureDate").value;
+                console.log(startStation,endSation,departureDate);
+                //返回到后端
+                request.open("GET","/searchTicket?startStation="+startStation+"&endStation="+endSation+"&departureDate="+departureDate);
+                request.send(null);
+            }
+        }
+        function callBack(){
+            /*
+            *回调： 服务器相应成功后，利用回调函数拿到服务器返回的数据
+            * */
+            console.log("我是回调处理")
+            if (request.readyState==4){
+                //请求完成
+                if (request.status==200){
+                    //通过request.responseText来接收服务器返回的数据
+                    console.log("服务器返回的车次数据：",request.responseText);
+                    //把json数据转化为JavaScript对象
+                    var trainDate=JSON.parse(request.responseText);
+                    /*
+                   * 循环把每个车次的信息放入表格中*/
+                   for(var i=0;i<trainDate.length;i++){
+                       var train=trainDate[i];//一个车次的信息
+
+                       brNode=document.createElement("br");
+
+                       trainNumberTd=document.createElement("td");
+                       trainNumberTd.appendChild(document.createTextNode(train.trainNumber));
+
+                       startStationTd=document.createElement("td");
+                       startStationTd.appendChild(document.createTextNode(train.startStation))
+                       startStationTd.appendChild(brNode)
+                       startStationTd.appendChild(document.createTextNode(train.endStation));
+
+                       departureDateTd=document.createElement("td");
+                       departureDateTd.appendChild(document.createTextNode(train.departureTime))
+                       departureDateTd.appendChild(brNode)
+                       departureDateTd.appendChild(document.createTextNode(train.arrivalTime));
+
+                       durationTd=document.createElement("td");
+                       durationTd.appendChild(document.createTextNode(train.duration));
+
+                       var trainTR=document.createElement("tr");
+                       trainTR.appendChild(trainNumberTd);
+                       trainTR.appendChild(startStationTd);
+                       trainTR.appendChild(departureDateTd);
+                       trainTR .appendChild(durationTd);
+                       document.getElementById("train").appendChild(trainTR);
+                   }
+                }
+            }
+        }
+
+        function search(){
+            console.log("开始车票查询");
+        }
+
+    </script>
+</head>
+<body>
+<!--请求类型：get,post:参数不会出现在地址栏，封装到了《请求体》中-->
+<lable for="startStation">起始站：</lable><input type="text" id="startStation" name="startStation">
+<lable for="endStation">到达站：</lable><input type="text" id="endStation" name="endStation">
+<lable for="departureDate">出发日期：</lable><input type="date" id="departureDate" name="departureDate">
+<!--添加点击事件-->
+<button id="search" type="submit">查询</button>
+
+<table id="train">
+    <thead>
+    <tr>
+        <th>车次</th>
+        <th>出发站<br>到达时间</th>
+        <th>历时</th>
+        <th>商务座<br>特等座</th>
+    </tr>
+    </thead>
+</table>
+
+
+</body>
+</html>
